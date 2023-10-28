@@ -1,0 +1,81 @@
+// Library to import plots to ParaView
+load "iovtk"
+
+// Mesh and Triangulation -----------------------------------------------------
+
+border a(t=-2, 2){x = -2; y = -t; label=1;};
+border b(t=-2, 2){x = t; y = -2; label=1;};
+border c(t=-2, 2){x = 2; y = t; label=1;};
+border d(t=-2, 2){x = -t; y = 2; label=1;};
+mesh Omega = buildmesh(a(100) + b(100) + c(100) + d(100));
+
+// plot(Omega, wait=true);
+
+
+// Parameters ------------------------------------------------------------------
+//rho=1 K=1 alpha=0.03 beta1=0.03 beta2=0.03 gamma=0.003 delta=0.3
+
+real rho= 1, K= 1, alpha= 0.03, beta1= 0.03, beta2= 0.03, gamma= 0.003, TR=0;
+real delta= 0.3, Tf=100, NTf=700, gammaK= gamma/K, dt=Tf/NTf, invK=1/K, TM=0;
+
+
+// Finite Elements Space -------------------------------------------------------
+fespace Vh(Omega, P1);
+
+Vh T, T0, v, Phi, N, N0 = 0, Phi0 = 0.5, test, P;
+
+// Initial Tumor (Regular and unifocal Mass)
+T0 = 0.5*exp(-0.5*((x/0.3)^2+(y/0.3)^2));
+P = Phi0/(Phi0 + T0);
+
+// Initial tumor (irregular and multifocal Mass)
+// T0 = 0.3*exp(-0.5*((x/0.3)^2+(y/0.3)^2)) + 0.3*exp(-0.5*(((x-1)/0.3)^2+((y+0.8)/0.3)^2)) + 0.2*exp(-0.5*(((x+0.3)/0.09)^2+(y/0.09)^2));
+
+// plot(T0, cmm="Initial tumor", value=true, fill=true);
+
+// Loop to solve the Partial differential Equation ---------------------------------
+
+problem Tumor(T, v)=
+    int2d(Omega, qft=qf1pTlump)(
+        T*v/dt + alpha*T*sqrt(1.-(Phi0/(Phi0+T0))^2)*v
+        + beta1*N0*T*v + rho*T*Phi0*invK*(T0+N0+Phi0)/(Phi0+T0)*v  )
+    + int2d(Omega)(
+        dx(T)*dx(v) + dy(T)*dy(v))
+    - int2d(Omega, qft=qf1pTlump)(
+        T0*v/dt +rho*T0*(Phi0/(Phi0+T0))*v);
+
+ofstream ff("Glioblastoma_data29.dat");
+
+for (int i=0; i < 600; i++)
+{
+
+	Tumor;
+
+	Phi =( dt*(gammaK*T0*sqrt(1-P^2)*Phi0*(1-(T0 + Phi0)/K) -delta*T0*Phi0) + Phi0 )/( 1+ dt*beta2*N0 +dt*gammaK*T0*sqrt(1-P^2)*N0/K );
+
+	N= dt*( alpha*T*sqrt(1-P^2) + beta1*N0*T + delta*T0*Phi + beta2*N0*Phi ) + N0;
+
+// Tumoral Ring (TR) and Tumoral Mass (TM) -------------------------------------
+  TR = int2d(Omega)(T0)/ int2d(Omega)(T0 + N0);
+  TM = int2d(Omega)(T0 + N0);
+
+ff<< i << "," << TR << "," << TM <<endl;
+
+	T0 = T;
+	N0 = N;
+	Phi0 = Phi;
+}
+
+// plot(T,cmm="Tumor", wait=true, fill=true, value=true);
+// plot(N,cmm="Necrosis", wait=true, fill=true, value=true);
+// plot(Phi,cmm="Vasculature", wait=true, fill=true, value=true);
+
+
+// Convert Function data in a csv file -----------------------------------------
+
+//ofstream ff("Glioblastoma_datos.dat");
+//for(int i = 0; i < Omega.nt; i++) {
+//	for (int j = 0; j < 3; j++){
+//	ff<< Omega[i][j].x << ", "<< Omega[i][j].y <<", "<<T[][Vh(i,j)] <<", "<<Phi[][Vh(i,j)]<<", "<<N[][Vh(i,j)]<<endl;
+//	}
+//}
