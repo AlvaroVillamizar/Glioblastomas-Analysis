@@ -5,14 +5,14 @@ DROP TABLE Glioblastoma_data## -- Type the number of the simulation you want to 
 SELECT *
 FROM Glioblastoma_data##  -- Type the number of the simulation you want to see
 
-CREATE TABLE Glioblastoma_data29 (
+CREATE TABLE Glioblastoma_data## (
 	Time	INT,
-	TR		FLOAT,
-	TM		FLOAT
+	TR	FLOAT,
+	TM	FLOAT
 );
 
-BULK INSERT Glioblastoma_data29
-FROM 'C:\Users\claud\OneDrive\Documents\Tesis-Simulations\Glioblastoma_data29.dat' -- 'Your file path for Glioblastoma_data##.dat'
+BULK INSERT Glioblastoma_data##
+FROM 'Your file path' -- 'Insert your file path for Glioblastoma_data##.dat'
 WITH(
 	FORMAT= 'CSV',
 	FIRSTROW= 2,
