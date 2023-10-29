@@ -1,6 +1,6 @@
 //#########################################################################//
-//	Title: Glioblastoma Simulations	      							    			         //
-//	Language: FreeFEM++ 4.13	                           				           //
+//	Title: Glioblastoma Simulations	      				   //
+//	Language: FreeFEM++ 4.13	                           	   //
 //#########################################################################//
 
 // Library to import plots to ParaView
