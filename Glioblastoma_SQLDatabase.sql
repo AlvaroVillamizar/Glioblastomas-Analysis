@@ -1,18 +1,28 @@
 -- Uploading all the CSV files in SQL Server --------------------------------------
 
-DROP TABLE Glioblastoma_data## -- Type the number of the simulation you want to remove
+DROP TABLE Glioblastoma_density3 -- Type the number of the simulation you want to remove
 
 SELECT *
 FROM Glioblastoma_data##  -- Type the number of the simulation you want to see
 
-CREATE TABLE Glioblastoma_data## (
+CREATE TABLE Glioblastoma_density# (
 	Time	INT,
-	TR	FLOAT,
-	TM	FLOAT
+	TR		FLOAT,
+	TM		FLOAT
 );
 
-BULK INSERT Glioblastoma_data##
-FROM 'Your file path' -- 'Insert your file path for Glioblastoma_data##.dat'
+CREATE TABLE Glioblastoma_density# (
+	Time	INT,
+	TMin3	FLOAT,
+	TMax3	FLOAT,
+	VMin3	FLOAT,
+	VMax3	FLOAT,
+	NMin3	FLOAT,
+	NMax3	FLOAT,
+);
+
+BULK INSERT Glioblastoma_density#
+FROM 'Your file path for Glioblastoma.dat' -- 'Insert your file path for Glioblastoma_data##.dat'
 WITH(
 	FORMAT= 'CSV',
 	FIRSTROW= 2,
@@ -143,3 +153,30 @@ FROM Glioblastoma_data AS GD
 
 SELECT *
 FROM #Glioblastoma
+
+SELECT
+	GD.Time,
+	GD.TMin,
+	GD.TMax,
+	GD.VMax,
+	GD.VMin,
+	GD.NMin,
+	GD.NMax,
+	GD2.TMin2,
+	GD2.TMax2,
+	GD2.VMax2,
+	GD2.VMin2,
+	GD2.NMin2,
+	GD2.NMax2,
+	GD3.TMin3,
+	GD3.TMax3,
+	GD3.VMax3,
+	GD3.VMin3,
+	GD3.NMin3,
+	GD3.NMax3
+FROM
+	Glioblastoma_density AS GD
+	JOIN Glioblastoma_density2 AS GD2
+	ON (GD.Time = GD2.Time)
+	JOIN Glioblastoma_density3 AS GD3
+	ON (GD.Time = GD3.Time)
